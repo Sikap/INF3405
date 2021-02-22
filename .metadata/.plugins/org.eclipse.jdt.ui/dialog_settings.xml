@@ -32,6 +32,7 @@
 			<item value="Server.jar"/>
 		</list>
 		<list key="FatJarPackageWizardPage.ANTSCRIPT_LOCATION_HISTORY">
+			<item value="C:\Users\skapl\eclipse-workspace.xml"/>
 			<item value=".xml"/>
 		</list>
 	</section>
@@ -94,5 +95,8 @@
 				<item key="antpath" value="C:\Users\skapl\eclipse-workspace\Server\javadoc.xml"/>
 			</section>
 		</section>
+	</section>
+	<section name="ClasspathContainerSelectionPage">
+		<item key="index" value="0"/>
 	</section>
 </section>

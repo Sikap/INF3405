@@ -1,0 +1,21 @@
+import java.net.ServerSocket;
+
+public class Server {
+	
+	private static ServerSocket Listener;
+	
+	public static void main(String[] args) throws Exception
+	{
+		int clientNumber = 0;
+		String serverAddress = "127.0.0.1";
+		int serverPort = 5000;
+		
+		
+		Listener = new ServerSocket();
+		Listener.setReuseAddress(true);
+		InetAdress serverIP = InetAddress.getByName(serverAddress);
+		
+		Listener.bind(new InetSocketAddress(serverIP,serverPort));
+		System.out.println("Hello,World");	
+	}
+}

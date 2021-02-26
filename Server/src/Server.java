@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+//https://stackoverflow.com/questions/5667371/validate-ipv4-address-in-java
+
 
 public class Server {
 
@@ -33,7 +35,7 @@ public class Server {
 				break;
 			} 
 			catch (IOException e) {
-				System.err.println("Erreur: Votre Ip est invalid ou votre port est deja utiliser!");
+				System.err.println("Erreur: Votre adresse IP est invalide");
 			}
 		}
 		
@@ -49,7 +51,6 @@ public class Server {
 			listener.close();
 		}
 	}
-	
 	
 	/**
 	 * Demande a l'utilisateur d'entrer un port et verifie que le numero de port est valide.
@@ -71,7 +72,6 @@ public class Server {
 	    	catch (Exception e) {
 	    		System.err.println("La valeur du port doit être un entier entre 5000 et 5050");
 	    	}
-
 	    }
 	    return Integer.parseInt(port);
 	}
@@ -92,7 +92,7 @@ public class Server {
 	    		adresseIpValide = adresseIpValide(deviceAddress);
 	    	} 
 			catch (Exception e) {
-				System.err.println("Erreur: Votre adresse IP est invalide ");
+				System.err.println("Erreur ");
 	    	}
 	    }
 		return deviceAddress;

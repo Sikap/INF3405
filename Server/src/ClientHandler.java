@@ -14,25 +14,27 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ClientHandler extends Thread {
-		
+//https://stackoverflow.com/questions/5667371/validate-ipv4-address-in-java
+
+
+public class ClientHandler extends Thread {		
 		private Socket socket;
-		private int clientNumber;
-		private Path actualPath;
-        private String IpAddressClient;
-        private String portClient;
+		private String IpAddress;
+        private String port;
+		private Path destination;
+		private int number;
         private PrintWriter out;      
         private BufferedReader in;
-        
+		
         /**
 		 * Constructeur de ClientHandler.
 		 * @param socket 
 		 * @param clientNumber 
 		 */
 		public ClientHandler(Socket socket, int clientNumber) {
+			this.number = clientNumber;
 			this.socket = socket;
-			this.clientNumber = clientNumber;
- 			System.out.println("New connection with client#" + clientNumber + " at " + socket);
+ 			System.out.println("Connection du client " + clientNumber + " - " + socket);
 		}
 		
 		/**
@@ -40,9 +42,9 @@ public class ClientHandler extends Thread {
 		 * @param command 
 		 * @return input
 		 */
-        private String firstInput(String command) {
+        private String input1(String command) {
         	String input = "";
-            if (command.contains(" ")){
+            if (command.contains(" ")) {
             	input = command.substring(0, command.indexOf(" "));
             }
             else {
@@ -51,12 +53,12 @@ public class ClientHandler extends Thread {
             return input;
         }
         
-    	/**
+        /**
 		 * Assigne a input la second partie de la command qui corespond au nom de fichier,dossier ou répertoire
 		 * @param command 
 		 * @return input
 		 */
-        private String secondInput(String command) {
+        private String input2(String command) {
         	String input = "";
             if (command.contains(" ")) {
             	input = command.substring(command.indexOf(" ") + 1, command.length());
@@ -64,90 +66,11 @@ public class ClientHandler extends Thread {
             return input;
         }
         
-    	/**
-		 * Switch case qui appelle la fonction qui traite la comand.
-		 * @param command
-		 */
-        private void command(String command) {
-        	switch(firstInput(command)) 
-        	{
-        	case "cd" :
-        		processCd(secondInput(command));
-        		break;
-        	
-        	case "ls" :
-        		processLs();
-        		break;
-        		
-        	case "mkdir" :
-        		processMkdir(secondInput(command));
-        		break;
-        		
-        	case "upload" :
-        		try {
-        			saveFile(secondInput(command));
-        		} 
-        		catch (IOException e) {
-        			e.printStackTrace();
-        		}
-        		break;
-        	
-        	case "download" :
-        		try {
-    				if (isFileExist(secondInput(command))){    					
-    					sendFile(secondInput(command));
-    				}
-    			} 
-        		catch (IOException e) {
-    				e.printStackTrace();
-    			}
-			    break;
-        	case "exit":
-        		break;
-        	   
-    	    default:
-    	    	break;
- 	
-        	}
-        }
-        
-    	/**
-		 * Fonction qui traite la comande cd
-		 * @param directory le fichier de répertoire
-		 */
-        private void processCd(String directory) {
-        	
-        	Path desiredPath = actualPath.subpath(0, actualPath.getNameCount()-1);
-        	
-        	Path path = Paths.get(directory);
-        	for (int i = 0; i < path.getNameCount(); i++) {   		
-        		String subpath = path.subpath(i, i+1).toString();
-        		if (subpath.equals("..")) {
-        			desiredPath = desiredPath.subpath(0, desiredPath.getNameCount()-1);
-        	
-        		} 
-        		else {
-        			desiredPath = desiredPath.resolve(subpath);
-        		}
-        	}
-        	desiredPath = actualPath.getRoot().resolve(desiredPath);
-        	desiredPath = desiredPath.resolve(".");
-        	
-        	if (desiredPath.toFile().isDirectory()) {
-        		actualPath = desiredPath;
-        		out.println("Vous etes dans le dossier " + actualPath.subpath(actualPath.getNameCount()-2, actualPath.getNameCount()-1).toString());
-        	} 
-        	else {
-        		out.println("Le dossier " + actualPath.subpath(desiredPath.getNameCount()-2, desiredPath.getNameCount()-1).toString() + " n'existe pas");
-        	}
-        	
-        }
-        
-    	/**
+        /**
 		 * Fonction qui traite la comande ls
 		 */
-        private void processLs() {
-        	File[] files = new File(actualPath.toString()).listFiles();
+        private void commandLs() {
+        	File[] files = new File(destination.toString()).listFiles();
         	for (File file : files) {
         		if (file.isFile()) {
         			out.println("[File] " + file.getName());
@@ -157,39 +80,84 @@ public class ClientHandler extends Thread {
         		}
         	}   	
         	if (files.length == 0) {
-        		out.println("Aucun fichier dans le repertoire");
+        		out.println("Repertoire vide");
         	}
         }
         
-    	/**
+        /**
 		 * Fonction qui traite la comande mkdir
 		 * @param folder nom du fichier a crée
 		 */
-        private void processMkdir(String folder) { 	
-		    if (new File(actualPath.resolve(folder).toString()).mkdirs()) {
-		  	  	out.println("Le dossier " + folder + " a bien ete cree");
+        private void commandMkdir(String folder) { 	
+		    if (new File(destination.resolve(folder).toString()).mkdirs()) {
+		  	  	out.println("Le dossier " + folder + " a bien ete genere");
 		    } 
 		    else {
-		    	out.println("Le dossier " + folder + " n'a pas ete cree");
+		    	out.println("Le dossier " + folder + " n'a pas ete genere");
 		    }
         }
         
-    	/**
+        /**
+		 * Fonction qui traite la comande cd
+		 * @param directory le fichier de répertoire
+		 */
+        private void commandCd(String directory) {        	
+        	Path path = Paths.get(directory);
+        	Path finalPath = destination.subpath(0, destination.getNameCount() - 1);      	
+        	for (int i = 0; i < path.getNameCount(); i++) {   		
+        		String subpath = path.subpath(i, i+1).toString();
+        		if (subpath.equals("..")) {
+        			finalPath = finalPath.subpath(0, finalPath.getNameCount() - 1);      	
+        		} 
+        		else {
+        			finalPath = finalPath.resolve(subpath);
+        		}
+        	}
+        	finalPath = destination.getRoot().resolve(finalPath);
+        	finalPath = finalPath.resolve(".");       	
+        	if (finalPath.toFile().isDirectory()) {
+        		destination = finalPath;
+        		out.println("Presentement dans le dossier " + destination.subpath(destination.getNameCount() - 2, destination.getNameCount() - 1).toString());
+        	} 
+        	else {
+        		out.println("Le dossier " + destination.subpath(finalPath.getNameCount() - 2, finalPath.getNameCount()-1).toString() + " n'existe pas");
+        	}      	
+        }
+        
+        /**
 		 * Upload un fichier du client vers le server
 		 * @param fileName 
 		 */
-    	private void saveFile(String fileName) throws IOException {
-    		DataInputStream dis = new DataInputStream(socket.getInputStream());
-    		FileOutputStream fos = new FileOutputStream(fileName);
-    		byte[] buffer = new byte[4096];
-    		long fileSize = dis.readLong();
+    	private void save(String fileName) throws Exception {
+    		DataInputStream input = new DataInputStream(socket.getInputStream());
+    		FileOutputStream output = new FileOutputStream(fileName);
     		int read = 0;
-    		while(fileSize > 0 && (read = dis.read(buffer)) > 0) {
-    			fos.write(buffer, 0, read);
+    		long fileSize = input.readLong();
+    		byte[] buffer = new byte[5000];
+    		while(fileSize > 0 && (read = input.read(buffer)) > 0) {
+    			output.write(buffer, 0, read);
     			fileSize -= read;
     		}
-    		fos.close();
-    		out.println("Le fichier " + fileName + " a bien ete televerse");
+    		output.close();
+    		out.println("Le fichier " + fileName + " a ete upload");
+    	}
+    	
+    	/**
+		 * Download un fichier du server vers le client.
+		 * @param fileName 
+		 */
+    	private void send(String fileName) throws Exception {  		
+    		File file = destination.resolve(fileName).toFile();
+    		FileInputStream input = new FileInputStream(file.toString());
+    		DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+    		int read;
+    		output.writeLong(file.length());
+    		byte[] buffer = new byte[5000];
+    		while ((read = input.read(buffer)) > 0) {
+    			output.write(buffer, 0, read);
+    		}
+    		input.close();
+    		out.println("Le fichier " + fileName + " a bien ete telecharge");
     	}
     	
     	/**
@@ -197,10 +165,10 @@ public class ClientHandler extends Thread {
 		 * @param fileName
 		 * @return  true si le fichier exist
 		 */
-        private boolean isFileExist(String fileName){ 	
-        	File file = actualPath.resolve(fileName).toFile();
-        	if (!(file.isFile())){
-        		out.println("Ce fichier n'existe pas.");
+        private boolean verifyFile(String fileName) { 	
+        	File file = destination.resolve(fileName).toFile();
+        	if (!(file.isFile())) {
+        		out.println("Le fichier n'existe pas.");
         		return false;
         	} 
         	else {
@@ -209,41 +177,60 @@ public class ClientHandler extends Thread {
         	}
         }
         
+
     	/**
-		 * Download un fichier du server vers le client.
-		 * @param fileName 
+		 * Switch case qui appelle la fonction qui traite la comand.
+		 * @param command
 		 */
-    	private void sendFile(String fileName) throws IOException {  		
-    		File file = actualPath.resolve(fileName).toFile();
-    		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-    		FileInputStream fis = new FileInputStream(file.toString());
-    		byte[] buffer = new byte[4096];
-    		int read;
-    		dos.writeLong(file.length());
-    		while ((read=fis.read(buffer)) > 0) {
-    			dos.write(buffer, 0, read);
-    		}
-    		fis.close();
-    		out.println("Le fichier " + fileName + " a bien ete telecharge");
-    	}
-    	
-    	/**
+        private void command(String command) {
+        	switch(input1(command)) {
+        		case "ls" :
+        			commandLs();
+        			break; 
+        		case "cd" :
+        			commandCd(input2(command));
+        			break;   	   		
+        		case "mkdir" :
+        			commandMkdir(input2(command));
+        			break; 	
+        		case "download" :
+        			try {
+        				if (verifyFile(input2(command))) {    					
+        					send(input2(command));
+        				}
+        			} 
+        			catch (Exception e) {
+        				e.printStackTrace();
+        			}
+        			break;
+        		case "upload" :
+        			try {
+        				save(input2(command));
+        			} 
+        			catch (Exception e) {
+        				e.printStackTrace();
+        			}
+        			break;   	
+        		case "exit":
+        			break;   	   
+        		default:
+        			break;
+        	}
+        }
+		
+        /**
 		 * Lis la commade de l'utilisateur et lance le traitement de la commande.
 		 */
 		public void run() {
 			try {
 				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				out = new PrintWriter(socket.getOutputStream(), true);
-				
-				out.println("Hello from server - you are client#" + clientNumber + ".");
-				
+				out = new PrintWriter(socket.getOutputStream(), true);				
+				out.println("Vous etes le client - " + number);				
 				String input = in.readLine();
-				actualPath = Paths.get(input);
-				
+				destination = Paths.get(input);			
 				input = in.readLine();
-				IpAddressClient = firstInput(input);
-				portClient = secondInput(input);
-				
+				IpAddress = input1(input);
+				port = input2(input);			
 				while (true) {
 					input = in.readLine();
 					if (input == null) {
@@ -254,17 +241,17 @@ public class ClientHandler extends Thread {
 					out.println("done");
 				}
 			} 
-			catch (IOException e) {
-				System.out.println("Error handling client# " + clientNumber + ": " + e);
+			catch (Exception e) {
+				System.out.println("Erreur avec le client - " + number + ": " + e);
 			} 
 			finally {
 				try {
 					socket.close();
 				} 
-				catch (IOException e) {
-					System.out.println("Couldn't close a socket, what's going on?");
+				catch (Exception e) {
+					System.out.println("Probleme avec le socket");
 				}
-				System.out.println("Connection with client # " + clientNumber + " closed");
+				System.out.println("Deconnection du client - " + number);
 			}
 		}
 		
@@ -273,9 +260,9 @@ public class ClientHandler extends Thread {
 		 * @param message de commande utiliser.
 		 */
 		private void commandLog(String message) {
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd@HH:mm:ss");
 			Date date = new Date();
-			System.out.println("[" + IpAddressClient + ":" + portClient + ":" + socket.getPort() + "-" +  dateFormat.format(date) + "]: " + message);
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd@HH:mm:ss");
+			System.out.println("[" + IpAddress + ":" + port + ":" + socket.getPort() + "-" +  dateFormat.format(date) + "]: " + message);
 		}
 		
 	}

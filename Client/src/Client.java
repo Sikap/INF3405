@@ -24,7 +24,7 @@ public class Client {
     
     private static final String IP_REGEX = "^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$" ;
 	private static final Pattern IP_PATTERN = Pattern.compile(IP_REGEX);
-	
+
 	/**
 	 * Verifie que l'addresse IP a le bon format.
 	 * @param  ip 
@@ -49,7 +49,7 @@ public class Client {
        }
        return true;
  	}
- 	
+	
  	/**
 	 * Verifie que le port et entre 5000 et 5050.
 	 * @param port 
@@ -75,6 +75,7 @@ public class Client {
         }
         return port;
     }
+	
 	/**
 	 * Demande a l'utilisateur une addresse IP et fait la verification.
 	 * @return adressIP
@@ -91,7 +92,7 @@ public class Client {
         }
         return adressIP;
     }
-	
+    
 	/**
 	 * Verifie que ces une commande valide.
 	 * @param command 
@@ -266,6 +267,7 @@ public class Client {
         	System.out.println("Vous avez ete deconnecte avec succes.");
         }
     }
+
 	/**
 	 * Construit un nouveau Client et appele run.
 	 * @param args Unused 

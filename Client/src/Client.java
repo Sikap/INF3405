@@ -24,7 +24,12 @@ public class Client {
     
     private static final String IP_REGEX = "^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$" ;
 	private static final Pattern IP_PATTERN = Pattern.compile(IP_REGEX);
-
+	
+	/**
+	 * Verifie que l'addresse IP a le bon format.
+	 * @param  ip 
+	 * @return true si l'addresse IP est correct.
+	 */
  	private static boolean verifyIp(String ip) {
  		if (ip == null) {
 	            return false;
@@ -44,11 +49,20 @@ public class Client {
        }
        return true;
  	}
-	
+ 	
+ 	/**
+	 * Verifie que le port et entre 5000 et 5050.
+	 * @param port 
+	 * @return true si le port et entre 5000 et 5050
+	 */
 	public boolean verifyPort(int port) {
 		return (port >= 5000 && port <= 5050);
 	}
 	
+	/**
+	 * Demande a l'utilisateur un port et fait la verification.
+	 * @return port
+	 */
 	public int startPort() throws NumberFormatException, IOException{	
     	Scanner scanner = new Scanner(System.in);
     	System.out.println("Entrer votre port d'écoute: ");
@@ -61,7 +75,10 @@ public class Client {
         }
         return port;
     }
-	
+	/**
+	 * Demande a l'utilisateur une addresse IP et fait la verification.
+	 * @return adressIP
+	 */
 	public String startIp() throws IOException{    
   	    Scanner scanner = new Scanner(System.in);
 		System.out.println("Entrer votre adresse IP: ");
@@ -74,7 +91,12 @@ public class Client {
         }
         return adressIP;
     }
-    
+	
+	/**
+	 * Verifie que ces une commande valide.
+	 * @param command 
+	 * @return true si la commande est valide.
+	 */
     private boolean verifyCommand(String command) {  		
     	if (command.equals("ls") || command.equals("exit") || input1(command).equals("cd") || input1(command).equals("mkdir") || input1(command).equals("upload") 
     			|| input1(command).equals("download")) {
@@ -85,6 +107,11 @@ public class Client {
     	}
     }
     
+    /**
+	 * Assigne a input la premier partie de la command qui corespond seulement a la commande.
+	 * @param command 
+	 * @return input
+	 */
     private String input1(String command){
     	String input = "";
         if (command.contains(" ")) {
@@ -96,6 +123,11 @@ public class Client {
         return input;
     }
     
+    /**
+	 * Assigne a input la second partie de la command qui corespond au nom de fichier,dossier ou répertoire
+	 * @param command 
+	 * @return input
+	 */
     private String input2(String command) {
     	String input = "";
         if (command.contains(" ")) {
@@ -104,6 +136,11 @@ public class Client {
         return input;
     }
     
+    /**
+	 * Verifie que le fichier exist.
+	 * @param fileName 
+	 * @return true si le fichier exist.
+	 */
     private boolean verifyFile(String fileName) {
     	File file = new File(fileName);
     	if (!(file.isFile())) {
@@ -113,6 +150,11 @@ public class Client {
     	return true;
     }
     
+    /**
+	 * Download un fichier du server vers le client.
+	 * @param sock 
+	 * @param fileName 
+	 */
     private void download(Socket sock, String fileName) throws IOException {  
     	FileOutputStream output = new FileOutputStream(fileName);
     	DataInputStream input = new DataInputStream(sock.getInputStream());
@@ -127,6 +169,11 @@ public class Client {
 		output.close();
     }
     
+    /**
+	 * Upload un fichier du client au server.
+	 * @param sock 
+	 * @param fileName 
+	 */
     private void upload(Socket sock, File file) throws IOException { 
     	FileInputStream input = new FileInputStream(file.toString());
     	DataOutputStream output = new DataOutputStream(sock.getOutputStream());
@@ -140,6 +187,9 @@ public class Client {
 		input.close();
     }
     
+    /**
+	 * Affiche le resultat du traitement d'un upload ou download.
+	 */
     private void response(){
         String response = "";
         try {
@@ -154,6 +204,9 @@ public class Client {
         }
     }
     
+    /**
+	 * Connect le client au server.
+	 */
     public void connectToServer() throws IOException {
     	reader = new BufferedReader(new InputStreamReader(System.in));
     	serverAddress = startIp();
@@ -163,6 +216,9 @@ public class Client {
         out = new PrintWriter(socket.getOutputStream(), true);
     }
     
+    /**
+	 * Connect au server puis lis les command de l'utilisateur jusqu'a la commande exite.
+	 */
 	public void run() throws IOException {	
 		connectToServer();	
         System.out.println(in.readLine() + "\n");       
@@ -210,7 +266,10 @@ public class Client {
         	System.out.println("Vous avez ete deconnecte avec succes.");
         }
     }
-
+	/**
+	 * Construit un nouveau Client et appele run.
+	 * @param args Unused 
+	 */
     public static void main(String[] args) throws Exception {
         Client client = new Client();
         client.run();

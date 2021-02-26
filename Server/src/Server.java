@@ -12,6 +12,11 @@ public class Server {
 	private static final Pattern IP_PATTERN = Pattern.compile(IP_REGEX);
 	private static ServerSocket listener;
 	
+	/**
+	 * Fais rouler un server en utilisant l'adresseIP et porte donner par l'utilisateur.
+	 * @exception IOException si le IP adresse est invalid ou le port deja utiliser
+	 * @param args Unused
+	 */
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
 		Scanner scanner = new Scanner(System.in);
@@ -28,7 +33,7 @@ public class Server {
 				break;
 			} 
 			catch (IOException e) {
-				System.err.println("Erreur: Votre adresse IP est invalide");
+				System.err.println("Erreur: Votre Ip est invalid ou votre port est deja utiliser!");
 			}
 		}
 		
@@ -45,7 +50,12 @@ public class Server {
 		}
 	}
 	
-
+	
+	/**
+	 * Demande a l'utilisateur d'entrer un port et verifie que le numero de port est valide.
+	 * @exception Exception si la valeur du port est pas entre 5000 et 5050.
+	 * @return la valeur int du port.
+	 */
 	public static Integer evaluatePort(){
 		Scanner scanner = new Scanner(System.in);
 	    String port = "";
@@ -61,11 +71,16 @@ public class Server {
 	    	catch (Exception e) {
 	    		System.err.println("La valeur du port doit être un entier entre 5000 et 5050");
 	    	}
+
 	    }
 	    return Integer.parseInt(port);
 	}
 	
-
+	/**
+	 * Demande a l'utilisateur d'entrer une adresse IP et verifie que l'adresse IP est valide.
+	 * @exception Exception si la valeur de l'adresse IP est invalid.
+	 * @return deviceAddress la valeur de l'adresse IP.
+	 */
 	public static String evaluateAddress() {
 		Scanner scanner = new Scanner(System.in);
 		String deviceAddress = "";
@@ -77,13 +92,18 @@ public class Server {
 	    		adresseIpValide = adresseIpValide(deviceAddress);
 	    	} 
 			catch (Exception e) {
-				System.err.println("Erreur ");
+				System.err.println("Erreur: Votre adresse IP est invalide ");
 	    	}
 	    }
 		return deviceAddress;
 	}
 	
-	
+	/**
+	 * Verfie que l'adresse IP est dans le bon format.
+	 * @param ip l'adresse IP a verifier. 
+	 * @exception NumberFormatException si la valeur de l'adresse IP ne peut pas etre converti en nombre.
+	 * @return true si l'adresse IP a le bon format.
+	 */
 	public static boolean adresseIpValide(String ip) {
 		 if (ip == null) {
 	            return false;

@@ -23,13 +23,23 @@ public class ClientHandler extends Thread {
         private String portClient;
         private PrintWriter out;      
         private BufferedReader in;
-		
+        
+        /**
+		 * Constructeur de ClientHandler.
+		 * @param socket 
+		 * @param clientNumber 
+		 */
 		public ClientHandler(Socket socket, int clientNumber) {
 			this.socket = socket;
 			this.clientNumber = clientNumber;
  			System.out.println("New connection with client#" + clientNumber + " at " + socket);
 		}
 		
+		/**
+		 * Assigne a input la premier partie de la command qui corespond seulement a la commande.
+		 * @param command 
+		 * @return input
+		 */
         private String firstInput(String command) {
         	String input = "";
             if (command.contains(" ")){
@@ -41,6 +51,11 @@ public class ClientHandler extends Thread {
             return input;
         }
         
+    	/**
+		 * Assigne a input la second partie de la command qui corespond au nom de fichier,dossier ou répertoire
+		 * @param command 
+		 * @return input
+		 */
         private String secondInput(String command) {
         	String input = "";
             if (command.contains(" ")) {
@@ -49,7 +64,10 @@ public class ClientHandler extends Thread {
             return input;
         }
         
-        // 
+    	/**
+		 * Switch case qui appelle la fonction qui traite la comand.
+		 * @param command
+		 */
         private void command(String command) {
         	switch(firstInput(command)) 
         	{
@@ -93,6 +111,10 @@ public class ClientHandler extends Thread {
         	}
         }
         
+    	/**
+		 * Fonction qui traite la comande cd
+		 * @param directory le fichier de répertoire
+		 */
         private void processCd(String directory) {
         	
         	Path desiredPath = actualPath.subpath(0, actualPath.getNameCount()-1);
@@ -121,6 +143,9 @@ public class ClientHandler extends Thread {
         	
         }
         
+    	/**
+		 * Fonction qui traite la comande ls
+		 */
         private void processLs() {
         	File[] files = new File(actualPath.toString()).listFiles();
         	for (File file : files) {
@@ -136,6 +161,10 @@ public class ClientHandler extends Thread {
         	}
         }
         
+    	/**
+		 * Fonction qui traite la comande mkdir
+		 * @param folder nom du fichier a crée
+		 */
         private void processMkdir(String folder) { 	
 		    if (new File(actualPath.resolve(folder).toString()).mkdirs()) {
 		  	  	out.println("Le dossier " + folder + " a bien ete cree");
@@ -145,6 +174,10 @@ public class ClientHandler extends Thread {
 		    }
         }
         
+    	/**
+		 * Upload un fichier du client vers le server
+		 * @param fileName 
+		 */
     	private void saveFile(String fileName) throws IOException {
     		DataInputStream dis = new DataInputStream(socket.getInputStream());
     		FileOutputStream fos = new FileOutputStream(fileName);
@@ -159,6 +192,11 @@ public class ClientHandler extends Thread {
     		out.println("Le fichier " + fileName + " a bien ete televerse");
     	}
     	
+    	/**
+		 * Verifie que le fichier existe.
+		 * @param fileName
+		 * @return  true si le fichier exist
+		 */
         private boolean isFileExist(String fileName){ 	
         	File file = actualPath.resolve(fileName).toFile();
         	if (!(file.isFile())){
@@ -170,7 +208,11 @@ public class ClientHandler extends Thread {
         		return true;
         	}
         }
-    	
+        
+    	/**
+		 * Download un fichier du server vers le client.
+		 * @param fileName 
+		 */
     	private void sendFile(String fileName) throws IOException {  		
     		File file = actualPath.resolve(fileName).toFile();
     		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
@@ -184,7 +226,10 @@ public class ClientHandler extends Thread {
     		fis.close();
     		out.println("Le fichier " + fileName + " a bien ete telecharge");
     	}
-		
+    	
+    	/**
+		 * Lis la commade de l'utilisateur et lance le traitement de la commande.
+		 */
 		public void run() {
 			try {
 				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -223,6 +268,10 @@ public class ClientHandler extends Thread {
 			}
 		}
 		
+		/**
+		 * Affiche la commande utiliser dans client avec affichage de l'address IP, le port et la date.
+		 * @param message de commande utiliser.
+		 */
 		private void commandLog(String message) {
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd@HH:mm:ss");
 			Date date = new Date();

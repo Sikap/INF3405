@@ -24,75 +24,79 @@ public class Client {
     
     private static final String IP_REGEX = "^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$" ;
 	private static final Pattern IP_PATTERN = Pattern.compile(IP_REGEX);
-
-	/**
-	 * Verifie que l'addresse IP a le bon format.
-	 * @param  ip 
-	 * @return true si l'addresse IP est correct.
-	 */
- 	private static boolean verifyIp(String ip) {
- 		if (ip == null) {
-	            return false;
-	     }
-       if (!IP_PATTERN.matcher(ip).matches())
-           return false;
-       String[] segments = ip.split("\\.");
-       try {
-           for (String segment: segments) {
-               if (Integer.parseInt(segment) > 255 || (segment.length() > 1 && segment.startsWith("0"))) {
-                   return false;
-               }
-           }
-       }
-       catch(NumberFormatException e) {
-           return false;
-       }
-       return true;
- 	}
 	
- 	/**
-	 * Verifie que le port et entre 5000 et 5050.
-	 * @param port 
-	 * @return true si le port et entre 5000 et 5050
+	/**
+	 * Demande a l'utilisateur d'entrer une adresse IP et verifie que l'adresse IP est valide.
+	 * @exception Exception si la valeur de l'adresse IP est invalid.
+	 * @return deviceAddress la valeur de l'adresse IP.
 	 */
-	public boolean verifyPort(int port) {
-		return (port >= 5000 && port <= 5050);
+	public static String evaluateAddress() {
+		Scanner scanner = new Scanner(System.in);
+		String deviceAddress = "";
+		Boolean adresseIpValide = false;
+		while (!adresseIpValide) {
+			try {
+				System.out.println("Entrer votre adresse IP: ");
+				deviceAddress=scanner.next();
+	    		adresseIpValide = adresseIpValide(deviceAddress);
+	    	} 
+			catch (Exception e) {
+				System.err.println("Erreur votre adresse IP n'a pas le bon format.");
+	    	}
+	    }
+		return deviceAddress;
 	}
 	
 	/**
-	 * Demande a l'utilisateur un port et fait la verification.
-	 * @return port
+	 * Verfie que l'adresse IP est dans le bon format.
+	 * @param ip l'adresse IP a verifier. 
+	 * @exception NumberFormatException si la valeur de l'adresse IP ne peut pas etre converti en nombre.
+	 * @return true si l'adresse IP a le bon format.
 	 */
-	public int startPort() throws NumberFormatException, IOException{	
-    	Scanner scanner = new Scanner(System.in);
-    	System.out.println("Entrer votre port d'écoute: ");
-		int port = scanner.nextInt();
-        
-        while (!verifyPort(port)) {      	
-        	System.out.println("Erreur: Votre port d'ecoute dois etre entre 5000 et 5050 ");
-			System.out.println("Entrer un port d'écoute valide: ");
-			port = scanner.nextInt();
+	public static boolean adresseIpValide(String ip) {
+		 if (ip == null) {
+	            return false;
+	     }
+        if (!IP_PATTERN.matcher(ip).matches())
+            return false;
+        String[] parts = ip.split("\\.");
+        try {
+            for (String segment: parts) {
+                if (Integer.parseInt(segment) > 255 || (segment.length() > 1 && segment.startsWith("0"))) {
+                    return false;
+                }
+            }
         }
-        return port;
+        catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
     }
-	
+ 	
 	/**
-	 * Demande a l'utilisateur une addresse IP et fait la verification.
-	 * @return adressIP
+	 * Demande a l'utilisateur d'entrer un port et verifie que le numero de port est valide.
+	 * @exception Exception si la valeur du port est pas entre 5000 et 5050.
+	 * @return la valeur int du port.
 	 */
-	public String startIp() throws IOException{    
-  	    Scanner scanner = new Scanner(System.in);
-		System.out.println("Entrer votre adresse IP: ");
-		String adressIP = scanner.nextLine();
-  	    
-        while (!verifyIp(adressIP)) {      	
-        	System.out.println("Erreur: Votre adresse IP est invalide");
-			System.out.println("Entrer une  adresse IP  valide: ");
-			adressIP = scanner.nextLine();
-        }
-        return adressIP;
-    }
-    
+	public static Integer evaluatePort(){
+		Scanner scanner = new Scanner(System.in);
+	    String port = "";
+	    Boolean valeurValid = false;
+	    while (!valeurValid) {
+	    	try {
+	    		System.out.println("Entrer une valeur pour le port entre 5000 et 5050 :");
+	    		port = scanner.next();
+	    		if (Integer.parseInt(port) >= 5000 && Integer.parseInt(port) <= 5050) {
+	    			valeurValid = true;
+	    		}
+	    	} 
+	    	catch (Exception e) {
+	    		System.err.println("La valeur du port doit être un entier entre 5000 et 5050");
+	    	}
+	    }
+	    return Integer.parseInt(port);
+	}
+	
 	/**
 	 * Verifie que ces une commande valide.
 	 * @param command 
@@ -210,8 +214,8 @@ public class Client {
 	 */
     public void connectToServer() throws IOException {
     	reader = new BufferedReader(new InputStreamReader(System.in));
-    	serverAddress = startIp();
-    	port = startPort();
+    	serverAddress = evaluateAddress();
+    	port = evaluatePort();
         socket = new Socket(serverAddress, port);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
@@ -262,7 +266,7 @@ public class Client {
                 socket.close();
             } 
             catch (IOException e) {
-                System.out.println("Couldn't close a socket, what's going on?");
+                System.out.println("Impossible de fermer le socket, que se passe-t-il?");
             }
         	System.out.println("Vous avez ete deconnecte avec succes.");
         }

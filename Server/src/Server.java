@@ -92,7 +92,7 @@ public class Server {
 	    		adresseIpValide = adresseIpValide(deviceAddress);
 	    	} 
 			catch (Exception e) {
-				System.err.println("Erreur ");
+				System.err.println("Erreur votre adresse IP n'a pas le bon format.");
 	    	}
 	    }
 		return deviceAddress;
